@@ -155,7 +155,6 @@ double FEM<dim>::basis_function(unsigned int node, double xi){
 
   /*You can use the function "xi_at_node" (defined above) to get the value of xi (in the bi-unit domain)
     at any node in the element - using deal.II's element node numbering pattern.*/
-
    for (int i = 0; i < basisFunctionOrder + 1; i++){
     if (i != node){
       value *= (xi - xi_at_node(i))/(xi_at_node(node) - xi_at_node(i));
@@ -179,7 +178,6 @@ double FEM<dim>::basis_gradient(unsigned int node, double xi){
 
   /*You can use the function "xi_at_node" (defined above) to get the value of xi (in the bi-unit domain)
     at any node in the element - using deal.II's element node numbering pattern.*/
-
   for (int i = 0; i < basisFunctionOrder + 1; i++){
     if (i != node){
       double mul = 1.;
@@ -190,7 +188,6 @@ double FEM<dim>::basis_gradient(unsigned int node, double xi){
       }
       value += (1 / (xi_at_node(node) - xi_at_node(i)))*mul;
     }
-
   }
   return value;
 }
@@ -200,7 +197,7 @@ template <int dim>
 void FEM<dim>::generate_mesh(unsigned int numberOfElements){
 
   //Define the limits of your domain
-  L = ; //EDIT
+  L = 0.1; //According to the Coding assignment 1
   double x_min = 0.;
   double x_max = L;
 
@@ -232,7 +229,7 @@ void FEM<dim>::define_boundary_conds(){
     }
     if(nodeLocation[globalNode] == L){
       if(prob == 1){
-	boundary_values[globalNode] = g2;
+	      boundary_values[globalNode] = g2;
       }
     }
   }
@@ -244,7 +241,7 @@ template <int dim>
 void FEM<dim>::setup_system(){
 
   //Define constants for problem (Dirichlet boundary values)
-  g1 = ; g2 = ; //EDIT
+  g1 = 0 ; g2 = 0.001 ; //From Coding Assignement 1
 
   //Let deal.II organize degrees of freedom
   dof_handler.distribute_dofs (fe);
@@ -319,18 +316,20 @@ void FEM<dim>::assemble_system(){
     Flocal = 0.;
     for(unsigned int A=0; A<dofs_per_elem; A++){
       for(unsigned int q=0; q<quadRule; q++){
-	x = 0;
-	//Interpolate the x-coordinates at the nodes to find the x-coordinate at the quad pt.
-	for(unsigned int B=0; B<dofs_per_elem; B++){
-	  x += nodeLocation[local_dof_indices[B]]*basis_function(B,quad_points[q]);
-	}
-	//EDIT - Define Flocal.
+        x = 0;
+        //Interpolate the x-coordinates at the nodes to find the x-coordinate at the quad pt.
+        for(unsigned int B=0; B<dofs_per_elem; B++){
+          x += nodeLocation[local_dof_indices[B]]*basis_function(B,quad_points[q]);
+        }
+        // Numerical Integration to get Flocal. A=10e-4, f=10e11
+        Flocal += (0.001 * h_e / 2) * basis_function(A, quad_points[q]) * (pow(10, 11) * x) * quad_weight[q];
       }
     }
     //Add nonzero Neumann condition, if applicable
     if(prob == 2){
       if(nodeLocation[local_dof_indices[1]] == L){
-	//EDIT - Modify Flocal to include the traction on the right boundary.
+	      //EDIT - Modify Flocal to include the traction on the right boundary. h=10e6 N
+        Flocal += pow(10,6);
       }
     }
 
@@ -338,9 +337,10 @@ void FEM<dim>::assemble_system(){
     Klocal = 0;
     for(unsigned int A=0; A<dofs_per_elem; A++){
       for(unsigned int B=0; B<dofs_per_elem; B++){
-	for(unsigned int q=0; q<quadRule; q++){
-	  //EDIT - Define Klocal.
-	}
+        for(unsigned int q=0; q<quadRule; q++){
+          //EDIT - Define Klocal. E=10e11 Pa, A=10e-4 m2
+          Klocal += (2 * pow(10,11) * pow(10,-4) / h_e) * basis_gradient(A, quad_points[q]) * basis_gradient(B, quad_points[q]) * quad_weight[q];
+        }
       }
     }
 
@@ -349,15 +349,16 @@ void FEM<dim>::assemble_system(){
     for(unsigned int A=0; A<dofs_per_elem; A++){
       //EDIT - add component A of Flocal to the correct location in F
       /*Remember, local_dof_indices[A] is the global degree-of-freedom number
-	corresponding to element node number A*/
+      corresponding to element node number A*/
+      F[local_dof_indices[A]] += Flocal;
       for(unsigned int B=0; B<dofs_per_elem; B++){
-	//EDIT - add component A,B of Klocal to the correct location in K (using local_dof_indices)
-	/*Note: K is a sparse matrix, so you need to use the function "add".
-	  For example, to add the variable C to K[i][j], you would use:
-	  K.add(i,j,C);*/
+      //EDIT - add component A,B of Klocal to the correct location in K (using local_dof_indices)
+      /*Note: K is a sparse matrix, so you need to use the function "add".
+        For example, to add the variable C to K[i][j], you would use:
+        K.add(i,j,C);*/
+        K.add(local_dof_indices[A], local_dof_indices[B], Klocal);
       }
     }
-
   }
 
   //Apply Dirichlet boundary conditions
@@ -419,8 +420,8 @@ double FEM<dim>::l2norm_of_error(){
       x = 0.; u_h = 0.;
       //Find the values of x and u_h (the finite element solution) at the quadrature points
       for(unsigned int B=0; B<dofs_per_elem; B++){
-	x += nodeLocation[local_dof_indices[B]]*basis_function(B,quad_points[q]);
-	u_h += D[local_dof_indices[B]]*basis_function(B,quad_points[q]);
+        x += nodeLocation[local_dof_indices[B]]*basis_function(B,quad_points[q]);
+        u_h += D[local_dof_indices[B]]*basis_function(B,quad_points[q]);
       }
       //EDIT - Find the l2-norm of the error through numerical integration.
       /*This includes evaluating the exact solution at the quadrature points*/
