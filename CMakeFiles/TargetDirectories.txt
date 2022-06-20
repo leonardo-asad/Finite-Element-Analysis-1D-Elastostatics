@@ -1,0 +1,10 @@
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/rebuild_cache.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/edit_cache.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/strip_comments.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/distclean.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/runclean.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/release.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/debug.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/run.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/info.dir
+/home/leonardo/code/leonardo-asad/fem/fem-with-cpp/Exercice_01/CA1_template/CMakeFiles/main1.dir
