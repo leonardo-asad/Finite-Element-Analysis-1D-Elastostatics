@@ -288,6 +288,17 @@ void FEM<dim>::setup_system(){
   quad_weight[1] = 8./9.;
   quad_weight[2] = 5./9.;
 
+  //------Uncomment to quadrule = 4
+  //quad_points[0] = -sqrt(3./7. + (2./7.)*sqrt(6./5.));
+  //quad_points[1] = -sqrt(3./7. - (2./7.)*sqrt(6./5.));
+  //quad_points[2] = sqrt(3./7. - (2./7.)*sqrt(6./5.));
+  //quad_points[3] = sqrt(3./7. + (2./7.)*sqrt(6./5.));
+
+  //quad_weight[0] = ((18. - sqrt(30))/36.);
+  //quad_weight[1] = ((18. + sqrt(30))/36.);
+  //quad_weight[2] = ((18. + sqrt(30))/36.);
+  //quad_weight[3] = ((18. - sqrt(30))/36.);
+
   //Just some notes...
   std::cout << "   Number of active elems:       " << triangulation.n_active_cells() << std::endl;
   std::cout << "   Number of degrees of freedom: " << dof_handler.n_dofs() << std::endl;
@@ -323,6 +334,7 @@ void FEM<dim>::assemble_system(){
 
     //Loop over local DOFs and quadrature points to populate Flocal and Klocal.
     Flocal = 0.;
+    //Data from coding excercise 1
     sectional_area = pow(10,-4);
     f = pow(10, 11);
     traction = pow(10,6);
@@ -440,9 +452,9 @@ double FEM<dim>::l2norm_of_error(){
       //EDIT - Find the l2-norm of the error through numerical integration.
       /*This includes evaluating the exact solution at the quadrature points*/
       if (prob == 1){
-        u_exact = - pow(x,3) / 6 + (7 * x) / 600;
+        u_exact = - pow(x,3.) / 6. + (7. * x) / 600.;
       } else{
-        u_exact = - pow(x,3) / 6 + (21 * x) / 200;
+        u_exact = - pow(x,3.) / 6. + (21. * x) / 200.;
       }
 
       l2norm += pow(u_exact - u_h, 2)*(h_e/2)*quad_weight[q];

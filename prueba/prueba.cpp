@@ -2,7 +2,7 @@
 #include <iostream>
 
 //Find the value of xi at the given node (using deal.II node numbering)
-int basisFunctionOrder = 2;
+int basisFunctionOrder = 3;
 
 double xi_at_node(unsigned int dealNode){
   double xi;
@@ -85,9 +85,9 @@ int main() {
 
   //std::cout << xi_at_node(1);
 
-  //std::cout << basis_function(1, 1.0);
+  //std::cout << basis_function(0, 1.0);
 
-  std::cout << basis_gradient(2, 1.0);
+  std::cout << basis_gradient(0, 1.0);
 
   return 0;
 }
