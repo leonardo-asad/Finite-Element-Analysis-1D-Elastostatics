@@ -94,7 +94,7 @@ class FEM
 template <int dim>
 FEM<dim>::FEM(unsigned int order,unsigned int problem)
 :
-fe (FE_Q<dim>(order), dim),
+fe (FE_Q<dim>(QIterated<1>(QTrapez<1>(),order)), dim),
   dof_handler (triangulation)
 {
   basisFunctionOrder = order;
@@ -269,7 +269,7 @@ void FEM<dim>::setup_system(){
   //Define quadrature rule
   /*A quad rule of 2 is included here as an example. You will need to decide
     what quadrature rule is needed for the given problems*/
-  quadRule = 3; //EDIT - Number of quadrature points along one dimension
+  quadRule = 4; //EDIT - Number of quadrature points along one dimension
   quad_points.resize(quadRule); quad_weight.resize(quadRule);
 
   //--------Uncomment for quadrule = 2
@@ -280,24 +280,24 @@ void FEM<dim>::setup_system(){
   //quad_weight[1] = 1.;
 
   //------Uncomment to quadrule = 3
-  quad_points[0] = -sqrt(3./5.);
-  quad_points[1] = 0;
-  quad_points[2] = sqrt(3./5.);
+  //quad_points[0] = -sqrt(3./5.);
+  //quad_points[1] = 0;
+  //quad_points[2] = sqrt(3./5.);
 
-  quad_weight[0] = 5./9.;
-  quad_weight[1] = 8./9.;
-  quad_weight[2] = 5./9.;
+  //quad_weight[0] = 5./9.;
+  //quad_weight[1] = 8./9.;
+  //quad_weight[2] = 5./9.;
 
   //------Uncomment to quadrule = 4
-  //quad_points[0] = -sqrt(3./7. + (2./7.)*sqrt(6./5.));
-  //quad_points[1] = -sqrt(3./7. - (2./7.)*sqrt(6./5.));
-  //quad_points[2] = sqrt(3./7. - (2./7.)*sqrt(6./5.));
-  //quad_points[3] = sqrt(3./7. + (2./7.)*sqrt(6./5.));
+  quad_points[0] = -sqrt(3./7. + (2./7.)*sqrt(6./5.));
+  quad_points[1] = -sqrt(3./7. - (2./7.)*sqrt(6./5.));
+  quad_points[2] = sqrt(3./7. - (2./7.)*sqrt(6./5.));
+  quad_points[3] = sqrt(3./7. + (2./7.)*sqrt(6./5.));
 
-  //quad_weight[0] = ((18. - sqrt(30))/36.);
-  //quad_weight[1] = ((18. + sqrt(30))/36.);
-  //quad_weight[2] = ((18. + sqrt(30))/36.);
-  //quad_weight[3] = ((18. - sqrt(30))/36.);
+  quad_weight[0] = ((18. - sqrt(30))/36.);
+  quad_weight[1] = ((18. + sqrt(30))/36.);
+  quad_weight[2] = ((18. + sqrt(30))/36.);
+  quad_weight[3] = ((18. - sqrt(30))/36.);
 
   //Just some notes...
   std::cout << "   Number of active elems:       " << triangulation.n_active_cells() << std::endl;

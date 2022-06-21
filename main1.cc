@@ -21,12 +21,12 @@ int main (){
 		unsigned int order = 3;
 
 		//Specify the subproblem: 1 or 2
-		unsigned int problem = 1;
+		unsigned int problem = 2;
 
     FEM<1> problemObject(order,problem);
 
     //Define the number of elements as an input to "generate_mesh"
-    problemObject.generate_mesh(10000); //e.g. a 10 element mesh
+    problemObject.generate_mesh(100); //e.g. a 10 element mesh
     problemObject.setup_system();
     problemObject.assemble_system();
     problemObject.solve();
