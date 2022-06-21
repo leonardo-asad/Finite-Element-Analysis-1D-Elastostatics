@@ -155,12 +155,11 @@ double FEM<dim>::basis_function(unsigned int node, double xi){
 
   /*You can use the function "xi_at_node" (defined above) to get the value of xi (in the bi-unit domain)
     at any node in the element - using deal.II's element node numbering pattern.*/
-   for (int i = 0; i < basisFunctionOrder + 1; i++){
+   for (unsigned int i = 0; i < basisFunctionOrder + 1; i++){
     if (i != node){
       value *= (xi - xi_at_node(i))/(xi_at_node(node) - xi_at_node(i));
     }
   }
-
   return value;
 }
 
@@ -178,10 +177,10 @@ double FEM<dim>::basis_gradient(unsigned int node, double xi){
 
   /*You can use the function "xi_at_node" (defined above) to get the value of xi (in the bi-unit domain)
     at any node in the element - using deal.II's element node numbering pattern.*/
-  for (int i = 0; i < basisFunctionOrder + 1; i++){
+  for (unsigned int i = 0; i < basisFunctionOrder + 1; i++){
     if (i != node){
       double mul = 1.;
-      for (int m = 0; m < basisFunctionOrder + 1; m++){
+      for (unsigned int m = 0; m < basisFunctionOrder + 1; m++){
         if (m != i && m != node){
           mul *= (xi - xi_at_node(m))/(xi_at_node(node) - xi_at_node(m));
         }
@@ -270,14 +269,24 @@ void FEM<dim>::setup_system(){
   //Define quadrature rule
   /*A quad rule of 2 is included here as an example. You will need to decide
     what quadrature rule is needed for the given problems*/
-  quadRule = 2; //EDIT - Number of quadrature points along one dimension
+  quadRule = 3; //EDIT - Number of quadrature points along one dimension
   quad_points.resize(quadRule); quad_weight.resize(quadRule);
 
-  quad_points[0] = -sqrt(1./3.); //EDIT
-  quad_points[1] = sqrt(1./3.); //EDIT
+  //--------Uncomment for quadrule = 2
+  //quad_points[0] = -sqrt(1./3.);
+  //quad_points[1] = sqrt(1./3.);
 
-  quad_weight[0] = 1.; //EDIT
-  quad_weight[1] = 1.; //EDIT
+  //quad_weight[0] = 1.;
+  //quad_weight[1] = 1.;
+
+  //------Uncomment to quadrule = 3
+  quad_points[0] = -sqrt(3./5.);
+  quad_points[1] = 0;
+  quad_points[2] = sqrt(3./5.);
+
+  quad_weight[0] = 5./9.;
+  quad_weight[1] = 8./9.;
+  quad_weight[2] = 5./9.;
 
   //Just some notes...
   std::cout << "   Number of active elems:       " << triangulation.n_active_cells() << std::endl;
@@ -294,7 +303,7 @@ void FEM<dim>::assemble_system(){
   FullMatrix<double> 				Klocal (dofs_per_elem, dofs_per_elem);
   Vector<double>      			Flocal (dofs_per_elem);
   std::vector<unsigned int> local_dof_indices (dofs_per_elem);
-  double										h_e, x, f;
+  double										h_e, x, f, sectional_area, E, traction;
 
   //loop over elements
   typename DoFHandler<dim>::active_cell_iterator elem = dof_handler.begin_active(),
@@ -314,6 +323,11 @@ void FEM<dim>::assemble_system(){
 
     //Loop over local DOFs and quadrature points to populate Flocal and Klocal.
     Flocal = 0.;
+    sectional_area = pow(10,-4);
+    f = pow(10, 11);
+    traction = pow(10,6);
+    E = pow(10,11);
+
     for(unsigned int A=0; A<dofs_per_elem; A++){
       for(unsigned int q=0; q<quadRule; q++){
         x = 0;
@@ -322,14 +336,14 @@ void FEM<dim>::assemble_system(){
           x += nodeLocation[local_dof_indices[B]]*basis_function(B,quad_points[q]);
         }
         // Numerical Integration to get Flocal. A=10e-4, f=10e11
-        Flocal += (0.001 * h_e / 2) * basis_function(A, quad_points[q]) * (pow(10, 11) * x) * quad_weight[q];
+        Flocal[A] += (sectional_area * h_e / 2) * basis_function(A, quad_points[q]) * (f * x) * quad_weight[q];
       }
     }
     //Add nonzero Neumann condition, if applicable
     if(prob == 2){
       if(nodeLocation[local_dof_indices[1]] == L){
 	      //EDIT - Modify Flocal to include the traction on the right boundary. h=10e6 N
-        Flocal += pow(10,6);
+        Flocal[1] += traction;
       }
     }
 
@@ -339,7 +353,7 @@ void FEM<dim>::assemble_system(){
       for(unsigned int B=0; B<dofs_per_elem; B++){
         for(unsigned int q=0; q<quadRule; q++){
           //EDIT - Define Klocal. E=10e11 Pa, A=10e-4 m2
-          Klocal += (2 * pow(10,11) * pow(10,-4) / h_e) * basis_gradient(A, quad_points[q]) * basis_gradient(B, quad_points[q]) * quad_weight[q];
+          Klocal[A][B] += (2 * E * sectional_area / h_e) * basis_gradient(A, quad_points[q]) * basis_gradient(B, quad_points[q]) * quad_weight[q];
         }
       }
     }
@@ -350,13 +364,13 @@ void FEM<dim>::assemble_system(){
       //EDIT - add component A of Flocal to the correct location in F
       /*Remember, local_dof_indices[A] is the global degree-of-freedom number
       corresponding to element node number A*/
-      F[local_dof_indices[A]] += Flocal;
+      F[local_dof_indices[A]] += Flocal[A];
       for(unsigned int B=0; B<dofs_per_elem; B++){
       //EDIT - add component A,B of Klocal to the correct location in K (using local_dof_indices)
       /*Note: K is a sparse matrix, so you need to use the function "add".
         For example, to add the variable C to K[i][j], you would use:
         K.add(i,j,C);*/
-        K.add(local_dof_indices[A], local_dof_indices[B], Klocal);
+        K.add(local_dof_indices[A], local_dof_indices[B], Klocal[A][B]);
       }
     }
   }
@@ -425,7 +439,13 @@ double FEM<dim>::l2norm_of_error(){
       }
       //EDIT - Find the l2-norm of the error through numerical integration.
       /*This includes evaluating the exact solution at the quadrature points*/
+      if (prob == 1){
+        u_exact = - pow(x,3) / 6 + (7 * x) / 600;
+      } else{
+        u_exact = - pow(x,3) / 6 + (21 * x) / 200;
+      }
 
+      l2norm += pow(u_exact - u_h, 2)*(h_e/2)*quad_weight[q];
     }
   }
 
